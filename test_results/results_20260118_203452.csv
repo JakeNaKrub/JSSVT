@@ -1,4 +1,0 @@
-Student ID,Status,Remark
-6538102421,FAILED,Compilation: Adv Comp Prog Lab 2\App.java:5: error: constructor Barbie in class Barbie cannot be applied to given... | Execution: Execution error
-6838035321,FAILED,"Compilation: src\App.java:5: error: constructor Barbie in class Barbie cannot be applied to given types;
-        ... | Execution: Execution error"
