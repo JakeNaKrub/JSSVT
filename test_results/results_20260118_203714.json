@@ -1,0 +1,162 @@
+[
+  {
+    "student_id": "6538102421",
+    "zip_file": "submissions\\6538102421\\Lab02_6538102421-830147-17685464613519.zip",
+    "timestamp": "2026-01-18T20:37:07.322198",
+    "extraction": {
+      "success": true
+    },
+    "compilation": {
+      "success": false,
+      "output": "Adv Comp Prog Lab 2\\App.java:5: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[0] = new Barbie(\"Barbie1\", 29.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nAdv Comp Prog Lab 2\\App.java:6: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[1] = new Barbie(\"Barbie2\", 34.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nAdv Comp Prog Lab 2\\App.java:7: error: constructor TeddyDoll in class TeddyDoll cannot be applied to given types;\n        dolls[2] = new TeddyDoll(\"Teddy\", 19.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nAdv Comp Prog Lab 2\\App.java:8: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[3] = new PorcelainDoll(\"Porcelain1\", 49.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nAdv Comp Prog Lab 2\\App.java:9: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[4] = new PorcelainDoll(\"Porcelain2\", 59.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\n5 errors\n"
+    },
+    "execution": {
+      "success": false
+    },
+    "overall_status": "FAILED"
+  },
+  {
+    "student_id": "6838035321",
+    "zip_file": "submissions\\6838035321\\Lab02_6838035321-1520039-17685504441727.zip",
+    "timestamp": "2026-01-18T20:37:08.042752",
+    "extraction": {
+      "success": true
+    },
+    "compilation": {
+      "success": false,
+      "output": "src\\App.java:5: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[0] = new Barbie(\"Barbie1\", 29.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nsrc\\App.java:6: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[1] = new Barbie(\"Barbie2\", 34.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nsrc\\App.java:7: error: constructor TeddyDoll in class TeddyDoll cannot be applied to given types;\n        dolls[2] = new TeddyDoll(\"Teddy\", 19.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nsrc\\App.java:8: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[3] = new PorcelainDoll(\"Porcelain1\", 49.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nsrc\\App.java:9: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[4] = new PorcelainDoll(\"Porcelain2\", 59.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\n5 errors\n"
+    },
+    "execution": {
+      "success": false
+    },
+    "overall_status": "FAILED"
+  },
+  {
+    "student_id": "6838063921",
+    "zip_file": "submissions\\6838063921\\Lab02_6838063921-1517690-17687272139133.zip",
+    "timestamp": "2026-01-18T20:37:08.719740",
+    "extraction": {
+      "success": true
+    },
+    "compilation": {
+      "success": false,
+      "output": "Lab02_6838063921.zip\\App.java:5: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[0] = new Barbie(\"Barbie1\", 29.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nLab02_6838063921.zip\\App.java:6: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[1] = new Barbie(\"Barbie2\", 34.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nLab02_6838063921.zip\\App.java:7: error: constructor TeddyDoll in class TeddyDoll cannot be applied to given types;\n        dolls[2] = new TeddyDoll(\"Teddy\", 19.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nLab02_6838063921.zip\\App.java:8: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[3] = new PorcelainDoll(\"Porcelain1\", 49.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nLab02_6838063921.zip\\App.java:9: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[4] = new PorcelainDoll(\"Porcelain2\", 59.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\n5 errors\n"
+    },
+    "execution": {
+      "success": false
+    },
+    "overall_status": "FAILED"
+  },
+  {
+    "student_id": "6838176121",
+    "zip_file": "submissions\\6838176121\\Lab02_6838176121-1517413-17685483752058.zip",
+    "timestamp": "2026-01-18T20:37:09.429787",
+    "extraction": {
+      "success": true
+    },
+    "compilation": {
+      "success": false,
+      "output": "App.java:7: error: cannot find symbol\n        dolls[2] = new TeddyDoll(\"Teddy\", 19.99f);\n                       ^\n  symbol:   class TeddyDoll\n  location: class App\nApp.java:8: error: cannot find symbol\n        dolls[3] = new PorcelainDoll(\"Porcelain1\", 49.99f);\n                       ^\n  symbol:   class PorcelainDoll\n  location: class App\nApp.java:9: error: cannot find symbol\n        dolls[4] = new PorcelainDoll(\"Porcelain2\", 59.99f);\n                       ^\n  symbol:   class PorcelainDoll\n  location: class App\n3 errors\n"
+    },
+    "execution": {
+      "success": false
+    },
+    "overall_status": "FAILED"
+  },
+  {
+    "student_id": "6838209221",
+    "zip_file": "submissions\\6838209221\\Lab02_6838209221-1522291-17685485968451.zip",
+    "timestamp": "2026-01-18T20:37:10.123842",
+    "extraction": {
+      "success": true
+    },
+    "compilation": {
+      "success": false,
+      "output": "App.java:7: error: cannot find symbol\n        dolls[2] = new TeddyDoll(\"Teddy\", 19.99f);\n                       ^\n  symbol:   class TeddyDoll\n  location: class App\nApp.java:8: error: cannot find symbol\n        dolls[3] = new PorcelainDoll(\"Porcelain1\", 49.99f);\n                       ^\n  symbol:   class PorcelainDoll\n  location: class App\nApp.java:9: error: cannot find symbol\n        dolls[4] = new PorcelainDoll(\"Porcelain2\", 59.99f);\n                       ^\n  symbol:   class PorcelainDoll\n  location: class App\n3 errors\n"
+    },
+    "execution": {
+      "success": false
+    },
+    "overall_status": "FAILED"
+  },
+  {
+    "student_id": "6838226921",
+    "zip_file": "submissions\\6838226921\\Lab02_6838226921-1520107-17685314253952.zip",
+    "timestamp": "2026-01-18T20:37:10.789548",
+    "extraction": {
+      "success": true
+    },
+    "compilation": {
+      "success": false,
+      "output": "src\\App.java:5: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[0] = new Barbie(\"Barbie1\", 29.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nsrc\\App.java:6: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[1] = new Barbie(\"Barbie2\", 34.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nsrc\\App.java:7: error: constructor TeddyDoll in class TeddyDoll cannot be applied to given types;\n        dolls[2] = new TeddyDoll(\"Teddy\", 19.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nsrc\\App.java:8: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[3] = new PorcelainDoll(\"Porcelain1\", 49.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nsrc\\App.java:9: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[4] = new PorcelainDoll(\"Porcelain2\", 59.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\n5 errors\n"
+    },
+    "execution": {
+      "success": false
+    },
+    "overall_status": "FAILED"
+  },
+  {
+    "student_id": "6838257321",
+    "zip_file": "submissions\\6838257321\\Lab02_6838257321-1518767-17685320191760.zip",
+    "timestamp": "2026-01-18T20:37:11.472202",
+    "extraction": {
+      "success": true
+    },
+    "compilation": {
+      "success": false,
+      "output": "Lab02\\App.java:5: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[0] = new Barbie(\"Barbie1\", 29.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nLab02\\App.java:6: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[1] = new Barbie(\"Barbie2\", 34.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nLab02\\App.java:7: error: constructor TeddyDoll in class TeddyDoll cannot be applied to given types;\n        dolls[2] = new TeddyDoll(\"Teddy\", 19.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nLab02\\App.java:8: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[3] = new PorcelainDoll(\"Porcelain1\", 49.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nLab02\\App.java:9: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[4] = new PorcelainDoll(\"Porcelain2\", 59.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\n5 errors\n"
+    },
+    "execution": {
+      "success": false
+    },
+    "overall_status": "FAILED"
+  },
+  {
+    "student_id": "6838293921",
+    "zip_file": "submissions\\6838293921\\Lab02_6838293921-1517917-17685519306290.zip",
+    "timestamp": "2026-01-18T20:37:12.340210",
+    "extraction": {
+      "success": true
+    },
+    "compilation": {
+      "success": false,
+      "output": "App.java:5: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[0] = new Barbie(\"Barbie1\", 29.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nApp.java:6: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[1] = new Barbie(\"Barbie2\", 34.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nApp.java:7: error: constructor TeddyDoll in class TeddyDoll cannot be applied to given types;\n        dolls[2] = new TeddyDoll(\"Teddy\", 19.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nApp.java:8: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[3] = new PorcelainDoll(\"Porcelain1\", 49.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nApp.java:9: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[4] = new PorcelainDoll(\"Porcelain2\", 59.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\n5 errors\n"
+    },
+    "execution": {
+      "success": false
+    },
+    "overall_status": "FAILED"
+  },
+  {
+    "student_id": "6838313821",
+    "zip_file": "submissions\\6838313821\\Lab02_6838313821-1522143-17685629568737.zip",
+    "timestamp": "2026-01-18T20:37:13.021702",
+    "extraction": {
+      "success": true
+    },
+    "compilation": {
+      "success": false,
+      "output": "Lab02_6838313821\\App.java:5: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[0] = new Barbie(\"Barbie1\", 29.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nLab02_6838313821\\App.java:6: error: constructor Barbie in class Barbie cannot be applied to given types;\n        dolls[1] = new Barbie(\"Barbie2\", 34.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nLab02_6838313821\\App.java:7: error: constructor TeddyDoll in class TeddyDoll cannot be applied to given types;\n        dolls[2] = new TeddyDoll(\"Teddy\", 19.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nLab02_6838313821\\App.java:8: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[3] = new PorcelainDoll(\"Porcelain1\", 49.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\nLab02_6838313821\\App.java:9: error: constructor PorcelainDoll in class PorcelainDoll cannot be applied to given types;\n        dolls[4] = new PorcelainDoll(\"Porcelain2\", 59.99f);\n                   ^\n  required: String,String,double\n  found:    String,float\n  reason: actual and formal argument lists differ in length\n5 errors\n"
+    },
+    "execution": {
+      "success": false
+    },
+    "overall_status": "FAILED"
+  },
+  {
+    "student_id": "6838338521",
+    "zip_file": "submissions\\6838338521\\Lab02_6838338521-1517506-17687108712761.zip",
+    "timestamp": "2026-01-18T20:37:13.734875",
+    "extraction": {
+      "success": true
+    },
+    "compilation": {
+      "success": false,
+      "output": "Lab02_6838338521\\App.java:3: error: cannot find symbol\n        Doll[] dolls = new Doll[5];\n        ^\n  symbol:   class Doll\n  location: class App\nLab02_6838338521\\App.java:3: error: cannot find symbol\n        Doll[] dolls = new Doll[5];\n                           ^\n  symbol:   class Doll\n  location: class App\nLab02_6838338521\\App.java:5: error: cannot find symbol\n        dolls[0] = new Barbie(\"Barbie1\", 29.99f);\n                       ^\n  symbol:   class Barbie\n  location: class App\nLab02_6838338521\\App.java:6: error: cannot find symbol\n        dolls[1] = new Barbie(\"Barbie2\", 34.99f);\n                       ^\n  symbol:   class Barbie\n  location: class App\nLab02_6838338521\\App.java:7: error: cannot find symbol\n        dolls[2] = new TeddyDoll(\"Teddy\", 19.99f);\n                       ^\n  symbol:   class TeddyDoll\n  location: class App\nLab02_6838338521\\App.java:8: error: cannot find symbol\n        dolls[3] = new PorcelainDoll(\"Porcelain1\", 49.99f);\n                       ^\n  symbol:   class PorcelainDoll\n  location: class App\nLab02_6838338521\\App.java:9: error: cannot find symbol\n        dolls[4] = new PorcelainDoll(\"Porcelain2\", 59.99f);\n                       ^\n  symbol:   class PorcelainDoll\n  location: class App\nLab02_6838338521\\App.java:11: error: cannot find symbol\n        for (Doll doll : dolls) {\n             ^\n  symbol:   class Doll\n  location: class App\n8 errors\n"
+    },
+    "execution": {
+      "success": false
+    },
+    "overall_status": "FAILED"
+  }
+]

@@ -1,0 +1,24 @@
+Name: Barbie1
+Material: Plastic
+Price: $29.989999771118164
+Barbie sings: I'm a Barbie girl in a Barbie world!
+
+Name: Barbie2
+Material: Plastic
+Price: $34.9900016784668
+Barbie sings: I'm a Barbie girl in a Barbie world!
+
+Name: Teddy
+Material: Fur
+Price: $19.989999771118164
+Teddy Doll says: Hug me!
+
+Name: Porcelain1
+Material: Porcelain
+Price: $49.9900016784668
+This doll is fragile. Not playing with it.
+
+Name: Porcelain2
+Material: Porcelain
+Price: $59.9900016784668
+This doll is fragile. Not playing with it.
