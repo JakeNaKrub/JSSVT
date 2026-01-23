@@ -299,10 +299,6 @@ python java_submission_tester.py `
 - Ensure `default_code/` contains all necessary Java files
 - Or provide the missing classes to students
 
-### "duplicate class: App"
-- Student submitted their own App.java
-- Script automatically removes it and uses the reference version
-
 ### "package lab2 conflicts"
 - Student files have `package` declarations
 - Use `--remove-pack` flag to automatically strip them
