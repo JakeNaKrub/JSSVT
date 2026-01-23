@@ -137,7 +137,8 @@ submissions/
   - Root directory
   - `src/` subfolder
   - Any nested folder structure
-- **Do NOT include App.java** - reference version will be used automatically
+- **You MUST include App.java** - reference version will replace your file automatically
+- **You MUST preserve project structure when submit** 
 - Package declarations (`package lab2;`) are automatically handled
 
 ## Output Reports
