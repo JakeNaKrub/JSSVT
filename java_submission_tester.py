@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Optional, Tuple
-
+import re
 
 class JavaSubmissionTester:
     """
@@ -27,7 +27,8 @@ class JavaSubmissionTester:
                  results_dir: str = "test_results",
                  expected_output: Optional[str] = None,
                  remove_packages: bool = False,
-                 check_students: Optional[List[str]] = None):
+                 check_students: Optional[List[str]] = None,
+                 verbose: bool = False):
         """
         Initialize the Java submission tester.
         
@@ -46,6 +47,7 @@ class JavaSubmissionTester:
         self.expected_output = expected_output
         self.remove_packages = remove_packages
         self.check_students = check_students
+        self.verbose = verbose
         
         # Create directories if they don't exist
         self.submissions_dir.mkdir(exist_ok=True)
@@ -54,6 +56,23 @@ class JavaSubmissionTester:
         self.temp_extract_dir.mkdir(exist_ok=True)
         
         self.test_results = []
+    def find_java_files(self, directory: Path) -> List[Path]:
+        """
+        Recursively find all valid .java files.
+        Filters out __MACOSX and hidden metadata files starting with ._
+        """
+        java_files = []
+        for java_file in directory.rglob("*.java"):
+            # Filter 1: Skip macOS system directory
+            if "__MACOSX" in java_file.parts:
+                continue
+            
+            # Filter 2: Skip macOS hidden metadata files (Fixes the utf-8 error)
+            if java_file.name.startswith("._"):
+                continue
+                
+            java_files.append(java_file)
+        return java_files
     
     def find_submission_zips(self) -> List[Path]:
         """
@@ -223,160 +242,150 @@ class JavaSubmissionTester:
             return False, f"Error running App: {str(e)}"
     
     def compare_output(self, actual: str, expected: str) -> Tuple[bool, str]:
-        """
-        Compare actual output with expected output.
-        
-        Args:
-            actual: Actual program output
-            expected: Expected program output
+        import re
+
+        # Split into lines but KEEP empty lines to maintain index integrity
+        actual_lines = actual.splitlines()
+        expected_lines = expected.splitlines()
+
+        # Determine the range to check (longest file)
+        max_lines = max(len(actual_lines), len(expected_lines))
+
+        for i in range(max_lines):
+            line_num = i + 1
             
-        Returns:
-            Tuple of (match: bool, message: str)
-        """
-        # Normalize whitespace for comparison
-        actual_lines = [line.strip() for line in actual.strip().split('\n') if line.strip()]
-        expected_lines = [line.strip() for line in expected.strip().split('\n') if line.strip()]
-        
-        if actual_lines == expected_lines:
-            return True, "Output matches expected"
-        else:
-            # Return mismatch details
-            diff_msg = f"Output mismatch:\nExpected {len(expected_lines)} lines, got {len(actual_lines)} lines"
-            return False, diff_msg
-    
-    def test_submission(self, student_id: str, zip_path: Path) -> Dict:
-        """
-        Test a single student submission.
-        
-        Args:
-            student_id: Student ID folder name
-            zip_path: Path to student zip file
-            
-        Returns:
-            Dictionary with test results
-        """
-        print(f"\nTesting {student_id}...")
-        
-        result = {
-            "student_id": student_id,
-            "zip_file": str(zip_path),
-            "timestamp": datetime.now().isoformat(),
-            "extraction": {"success": False},
-            "compilation": {"success": False},
-            "execution": {"success": False},
-            "overall_status": "FAILED"
-        }
-        
-        # Step 1: Extract submission
-        extract_path = self.extract_zip(zip_path, student_id)
-        if not extract_path:
-            return result
-        
-        result["extraction"]["success"] = True
-        
-        # Step 2: Optionally remove package declarations from student files
-        # This allows all classes to work together without package conflicts
-        if self.remove_packages:
-            for java_file in extract_path.rglob("*.java"):
-                if "__MACOSX" not in java_file.parts:
+            # Get line content or empty string if one file is shorter than the other
+            act_line = actual_lines[i].strip() if i < len(actual_lines) else None
+            exp_line = expected_lines[i].strip() if i < len(expected_lines) else None
+
+            # 1. Handle cases where one file ends early
+            if act_line is None or exp_line is None:
+                return False, f"Mismatch at line {line_num}: One file ended unexpectedly."
+
+            # 2. If both lines are empty after stripping, they "match" - move to next
+            if not act_line and not exp_line:
+                continue
+
+            # 3. Soft Clean for comparison (ignore colons, dollar signs, punctuation)
+            def soft_clean(text):
+                # Remove punctuation except decimals
+                cleaned = re.sub(r'[^a-zA-Z0-9.\s]', '', text)
+                return cleaned.lower().split()
+
+            act_tokens = soft_clean(act_line)
+            exp_tokens = soft_clean(exp_line)
+
+            # 4. Compare tokens within the line
+            is_match = True
+            if len(act_tokens) != len(exp_tokens):
+                is_match = False
+            else:
+                for a_tok, e_tok in zip(act_tokens, exp_tokens):
                     try:
-                        with open(java_file, 'r', encoding='utf-8') as f:
-                            content = f.read()
+                        # Numeric check
+                        if abs(float(a_tok) - float(e_tok)) > 0.02:
+                            is_match = False
+                            break
+                    except ValueError:
+                        # Text check
+                        if a_tok != e_tok:
+                            is_match = False
+                            break
+
+            if not is_match:
+                return False, (f"Mismatch at line {line_num}:\n"
+                            f"  Expected: \"{expected_lines[i]}\"\n"
+                            f"  Actual:   \"{actual_lines[i]}\"")
+
+        return True, "Output matches expected"
+    def test_submission(self, student_id: str, zip_path: Path) -> Dict:
+            print(f"\nTesting {student_id}...")
+            
+            result = {
+                "student_id": student_id,
+                "zip_file": str(zip_path),
+                "timestamp": datetime.now().isoformat(),
+                "extraction": {"success": False},
+                "compilation": {"success": False},
+                "execution": {"success": False},
+                "overall_status": "FAILED"
+            }
+            
+            # Step 1: Extract submission
+            extract_path = self.extract_zip(zip_path, student_id)
+            if not extract_path:
+                return result
+            result["extraction"]["success"] = True
+
+            if self.remove_packages:
+            # CHANGED: Use self.find_java_files() instead of extract_path.rglob()
+            # This ensures we only process the "clean" list of files
+                for java_file in self.find_java_files(extract_path):
+                    try:
+                        content = java_file.read_text(encoding='utf-8')
                         
                         # Remove package declarations
-                        updated_content = content
-                        import re
-                        updated_content = re.sub(r'^\s*package\s+[\w.]+\s*;', '', updated_content, flags=re.MULTILINE)
+                        updated = re.sub(r'^\s*package\s+[\w.]+\s*;', '', content, flags=re.MULTILINE)
                         
-                        if updated_content != content:
-                            with open(java_file, 'w', encoding='utf-8') as f:
-                                f.write(updated_content)
+                        if updated != content:
+                            java_file.write_text(updated, encoding='utf-8')
                             print(f"  ✓ Removed package declaration from {java_file.name}")
                     except Exception as e:
                         print(f"  ⚠ Could not process {java_file.name}: {e}")
-        
-        # Step 3: Remove student's App.java and copy default App.java
-        # Delete any student-submitted App.java to avoid duplicate class error
-        for app_file in extract_path.rglob("App.java"):
-            if "__MACOSX" not in app_file.parts:
-                app_file.unlink()
-                print(f"  ✓ Removed student's App.java")
-        
-        # Step 4: Find where student's Java files are located
-        # Copy App.java to the same directory as student's Java files
-        student_java_files = []
-        for java_file in extract_path.rglob("*.java"):
-            if "__MACOSX" not in java_file.parts and ".DS_Store" not in java_file.name:
-                student_java_files.append(java_file)
-        
-        # Find the directory containing student's Java files
-        target_dir = extract_path
-        if student_java_files:
-            # Get the most common parent directory
-            parent_dirs = {}
-            for java_file in student_java_files:
-                parent = java_file.parent
-                parent_dirs[parent] = parent_dirs.get(parent, 0) + 1
-            # Use the directory with most Java files
-            target_dir = max(parent_dirs, key=parent_dirs.get)
-        
-        # Copy default App.java to the target directory
-        default_app = self.default_code_dir / "App.java"
-        if default_app.exists():
-            shutil.copy(default_app, target_dir / "App.java")
-            print(f"  ✓ Copied default App.java to {target_dir.relative_to(extract_path) if target_dir != extract_path else 'root'}/")
-        else:
-            print(f"  ✗ Default App.java not found")
-        
-        # Step 5: Find all Java files
-        java_files = self.find_java_files(extract_path)
-        if not java_files:
-            result["compilation"]["error"] = "No Java files found in submission"
-            return result
-        
-        print(f"  ✓ Found {len(java_files)} Java file(s)")
-        
-        # Step 6: Compile
-        compile_success, compile_output = self.compile_java_files(extract_path, java_files)
-        result["compilation"]["success"] = compile_success
-        result["compilation"]["output"] = compile_output
-        
-        if compile_success:
-            print(f"  ✓ Compilation successful")
-        else:
-            print(f"  ✗ Compilation failed")
-            print(f"    {compile_output[:200]}")
-            return result
-        
-        # Step 7: Execute
-        exec_success, exec_output = self.run_app(extract_path)
-        result["execution"]["success"] = exec_success
-        result["execution"]["output"] = exec_output
-        
-        if exec_success:
-            print(f"  ✓ Execution successful")
+
+            # Step 3: Find and Replace App.java ONLY
+            # We look for where the student put their App.java to replace it in-place
+            student_app_files = list(extract_path.rglob("App.java"))
+            default_app = self.default_code_dir / "App.java"
             
-            # Step 8: Compare output if expected output is defined
-            if self.expected_output:
-                output_match, match_msg = self.compare_output(exec_output, self.expected_output)
-                result["output_validation"] = {
-                    "success": output_match,
-                    "message": match_msg
-                }
-                
-                if output_match:
-                    print(f"  ✓ {match_msg}")
-                    result["overall_status"] = "PASSED"
-                else:
-                    print(f"  ✗ {match_msg}")
-                    result["overall_status"] = "FAILED"
+            if not default_app.exists():
+                print(f"  ✗ Error: Master App.java not found in {self.default_code_dir}")
+                return result
+
+            if student_app_files:
+                for app_file in student_app_files:
+                    if "__MACOSX" not in app_file.parts:
+                        shutil.copy(default_app, app_file)
+                        print(f"  ✓ Replaced student's App.java at: {app_file.relative_to(extract_path)}")
             else:
-                result["overall_status"] = "PASSED"
-        else:
-            print(f"  ✗ Execution failed")
-            print(f"    {exec_output[:200]}")
-        
-        return result
+                # If they didn't provide an App.java, we place it in the root or 'src'
+                target = extract_path / "src" if (extract_path / "src").exists() else extract_path
+                shutil.copy(default_app, target / "App.java")
+                print(f"  ✓ App.java not found in zip; injected into {target.relative_to(extract_path)}/")
+
+            # Step 4: Find all Java files (keeping original structure)
+            java_files = self.find_java_files(extract_path)
+            if not java_files:
+                result["compilation"]["error"] = "No Java files found"
+                return result
+            
+            # Step 5: Compile (Uses -d bin to keep source tree clean)
+            compile_success, compile_output = self.compile_java_files(extract_path, java_files)
+            result["compilation"]["success"] = compile_success
+            result["compilation"]["output"] = compile_output
+            
+            if not compile_success:
+                print(f"  ✗ Compilation failed")
+                return result
+
+            # Step 6: Execute and Validate
+            exec_success, exec_output = self.run_app(extract_path)
+            result["execution"]["success"] = exec_success
+            result["execution"]["output"] = exec_output
+            
+            if exec_success:
+                if self.expected_output:
+                    match, message = self.compare_output(exec_output, self.expected_output)
+                    result["output_validation"] = {"success": match, "message": message}
+                    result["overall_status"] = "PASSED" if match else "FAILED"
+                    print(f"  {'✓' if match else '✗'} Output validation {'passed' if match else 'failed'}")
+                else:
+                    result["overall_status"] = "PASSED"
+                    print(f"  ✓ Execution successful")
+            else:
+                print(f"  ✗ Execution failed")
+
+            return result
     
     def run_all_tests(self) -> List[Dict]:
         """
@@ -537,6 +546,11 @@ def main():
         help="Test only specific student IDs (space-separated) (optional)"
     )
     parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Show full execution output for each submission"
+    )
+    parser.add_argument(
         "--cleanup",
         action="store_true",
         help="Clean up temporary extraction directory after testing"
@@ -561,7 +575,8 @@ def main():
         results_dir=args.results,
         expected_output=expected_output,
         remove_packages=args.remove_pack,
-        check_students=args.check_stuid
+        check_students=args.check_stuid,
+        verbose=args.verbose
     )
     
     try:
