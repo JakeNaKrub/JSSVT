@@ -137,7 +137,8 @@ submissions/
   - Root directory
   - `src/` subfolder
   - Any nested folder structure
-- **Do NOT include App.java** - reference version will be used automatically
+- **You MUST include App.java** - reference version will replace your file automatically
+- **You MUST preserve project structure when submit** 
 - Package declarations (`package lab2;`) are automatically handled
 
 ## Output Reports
@@ -297,10 +298,6 @@ python java_submission_tester.py `
 - Student didn't submit required helper classes
 - Ensure `default_code/` contains all necessary Java files
 - Or provide the missing classes to students
-
-### "duplicate class: App"
-- Student submitted their own App.java
-- Script automatically removes it and uses the reference version
 
 ### "package lab2 conflicts"
 - Student files have `package` declarations
