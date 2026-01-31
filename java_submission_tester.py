@@ -30,6 +30,8 @@ class JavaSubmissionTester:
                  results_dir: str = "test_results",
                  expected_output: Optional[str] = None,
                  remove_packages: bool = False,
+                 replace_main_file: bool = True,
+                 normalize_filenames: bool = True,
                  check_students: Optional[List[str]] = None,
                  verbose: bool = False,
                  logger: Optional[Callable[[str], None]] = None,
@@ -43,6 +45,8 @@ class JavaSubmissionTester:
         self.temp_extract_dir = Path("temp_extracts")
         self.expected_output = expected_output
         self.remove_packages = remove_packages
+        self.replace_main_file = replace_main_file
+        self.normalize_filenames = normalize_filenames
         self.check_students = check_students
         self.verbose = verbose
         self.logger = logger
@@ -154,7 +158,7 @@ class JavaSubmissionTester:
             rel_files = [str(f.relative_to(work_dir)) for f in java_files]
             
             # Create output directory for compiled classes
-            out_dir = work_dir / "bin"
+            out_dir = work_dir / f"bin_{work_dir.name}"
             out_dir.mkdir(exist_ok=True)
             
             # Compile with output directory
@@ -185,8 +189,8 @@ class JavaSubmissionTester:
         Looks for compiled classes in bin/ directory or root.
         """
         try:
-            bin_dir = work_dir / "bin"
-            classpath = str(bin_dir) if bin_dir.exists() else "."
+            bin_dir = work_dir / f"bin_{work_dir.name}"
+            classpath = str(bin_dir) if bin_dir.exists() else str(work_dir)
             
             # Use detected main class name
             cmd = ["java", "-cp", classpath, self.main_class_name]
@@ -374,23 +378,78 @@ class JavaSubmissionTester:
         # Find where the student's Java files actually are (handles nested folders/src folders)
         # Step 3: DYNAMIC INJECTION
         # Find where the student's Java files actually live in the new folder
+        # Step 3: SMART DETECTION & INJECTION
+        # Step 3: SMART DETECTION & INJECTION
         java_files = self.find_java_files(extract_path)
         default_main_path = self.default_code_dir / self.main_file_name
         
         if not default_main_path.exists():
-            self.log(f"  ✗ Error: Master {self.main_file_name} not found")
+            self.log(f"  ✗ Error: Master {self.main_file_name} not found in default_code")
             return result
 
+        student_main_path = None
+        
         if java_files:
-            # Inject the master App.java into the same folder as the student's code
+            # A. First, try to find by Name Match
             target_dir = java_files[0].parent
-            shutil.copy(default_main_path, target_dir / self.main_file_name)
-            if self.verbose:
-                self.log(f"  ✓ Replaced/Injected {self.main_file_name} into: {target_dir.relative_to(extract_path)}")
+            for f in java_files:
+                if f.name == self.main_file_name:
+                    student_main_path = f
+                    break
+            
+            # B. If name doesn't match, search for 'public static void main' in contents
+            if not student_main_path:
+                for f in java_files:
+                    try:
+                        if "public static void main" in f.read_text(encoding='utf-8'):
+                            student_main_path = f
+                            self.log(f"  ℹ Found main method in differently named file: {f.name}")
+                            break
+                    except Exception:
+                        continue
+
+            # --- NEW: NORMALIZATION LOGIC ---
+            # Fix files renamed by submission systems (e.g., A-111-2334344.java -> A111.java)
+            if self.normalize_filenames and student_main_path and student_main_path.exists():
+                try:
+                    content = student_main_path.read_text(encoding='utf-8')
+                    # Find the real class name inside the file
+                    match = re.search(r'public\s+class\s+([a-zA-Z0-9_$]+)', content)
+                    if match:
+                        real_class_name = match.group(1)
+                        correct_filename = f"{real_class_name}.java"
+                        
+                        if student_main_path.name != correct_filename:
+                            new_path = student_main_path.parent / correct_filename
+                            if new_path.exists(): 
+                                new_path.unlink() 
+                            student_main_path.rename(new_path)
+                            self.log(f"  ✎ Normalized: {student_main_path.name} -> {correct_filename}")
+                            student_main_path = new_path
+                            self.main_class_name = real_class_name
+                except Exception as e:
+                    self.log(f"  ⚠ Normalization error: {e}")
+            # --- END NORMALIZATION ---
+
+        # Step 3.1: Decide whether to Replace, Execute, or Inject
+        if student_main_path:
+            if self.replace_main_file:
+                # Force replace: overwrite student's file location with your master file
+                shutil.copy(default_main_path, student_main_path.parent / self.main_file_name)
+                # If the names were different (e.g., student used MyMain.java), delete their original
+                if student_main_path.name != self.main_file_name:
+                    student_main_path.unlink() 
+                self.log(f"  ✓ Replaced student's {student_main_path.name} with master {self.main_file_name}")
+                self.main_class_name = self.main_file_name.replace(".java", "")
+            else:
+                self.log(f"  ℹ Keeping and executing student's {student_main_path.name}")
+                self.main_class_name = student_main_path.stem 
         else:
-            # Fallback to root if no student java files were found
-            shutil.copy(default_main_path, extract_path / self.main_file_name)
-            self.log(f"  ⚠ No student Java files found; injected {self.main_file_name} to root")
+            # C. No main file found at all: Inject the master file
+            target_dir = java_files[0].parent if java_files else extract_path
+            shutil.copy(default_main_path, target_dir / self.main_file_name)
+            self.log(f"  ⚠ No main entry point found; injected {self.main_file_name}")
+            self.main_class_name = self.main_file_name.replace(".java", "")
         # Step 4: Final File List (Refresh to include the injected main class)
         java_files = self.find_java_files(extract_path)
         
@@ -608,6 +667,8 @@ class GradingGUI:
         self.results_dir = tk.StringVar(value=os.path.abspath("test_results"))
         self.expected_output_file = tk.StringVar(value="")
         self.remove_packages = tk.BooleanVar(value=False)
+        self.replace_main_file = tk.BooleanVar(value=True)
+        self.normalize_filenames = tk.BooleanVar(value=True)
         self.verbose = tk.BooleanVar(value=True)
         self.cleanup = tk.BooleanVar(value=True)
         self.student_filter = tk.StringVar(value="")
@@ -891,13 +952,18 @@ class GradingGUI:
         opt_frame = ttk.LabelFrame(self.root, text="Options", padding="10")
         opt_frame.pack(fill="x", padx=10, pady=5)
         
+        # Row 0
         ttk.Checkbutton(opt_frame, text="Remove Package Declarations", variable=self.remove_packages).grid(row=0, column=0, sticky="w", padx=5)
         ttk.Checkbutton(opt_frame, text="Cleanup Temp Files", variable=self.cleanup).grid(row=0, column=1, sticky="w", padx=5)
         ttk.Checkbutton(opt_frame, text="Verbose Logging", variable=self.verbose).grid(row=0, column=2, sticky="w", padx=5)
         
-        ttk.Label(opt_frame, text="Filter Students (space separated):").grid(row=1, column=0, sticky="w", padx=5, pady=(10,0))
-        ttk.Entry(opt_frame, textvariable=self.student_filter, width=40).grid(row=1, column=1, columnspan=2, sticky="we", padx=5, pady=(10,0))
-
+        # Row 1
+        ttk.Checkbutton(opt_frame, text="Replace Student Main Class", variable=self.replace_main_file).grid(row=1, column=0, sticky="w", padx=5, pady=(5,0))
+        ttk.Checkbutton(opt_frame, text="Normalize Filenames", variable=self.normalize_filenames).grid(row=1, column=1, sticky="w", padx=5, pady=(5,0))
+        
+        # Row 2 (Filter)
+        ttk.Label(opt_frame, text="Filter Students (space separated):").grid(row=2, column=0, sticky="w", padx=5, pady=(10,0))
+        ttk.Entry(opt_frame, textvariable=self.student_filter, width=40).grid(row=2, column=1, columnspan=2, sticky="we", padx=5, pady=(10,0))
         # --- Action Frame ---
         act_frame = ttk.Frame(self.root, padding="10")
         act_frame.pack(fill="x", padx=10)
@@ -993,6 +1059,8 @@ class GradingGUI:
                 results_dir=self.results_dir.get(),
                 expected_output=expected_content,
                 remove_packages=self.remove_packages.get(),
+                replace_main_file=self.replace_main_file.get(),
+                normalize_filenames=self.normalize_filenames.get(),
                 check_students=check_ids,
                 verbose=self.verbose.get(),
                 logger=self.append_log,  # Pass the GUI logging function
@@ -1061,6 +1129,10 @@ def main():
         help="Remove package declarations from student files (optional)"
     )
     parser.add_argument(
+        "--no-replace-main",
+        action="store_true", 
+        help="Do not replace student main file")
+    parser.add_argument(
         "--check-stuid",
         nargs="+",
         default=None,
@@ -1076,6 +1148,11 @@ def main():
         action="store_true",
         help="Clean up temporary extraction directory after testing"
     )
+    parser.add_argument("--no-normalize",
+                        action="store_false", 
+                        dest="normalize", 
+                        help="Disable filename normalization")
+    parser.set_defaults(normalize=True)
     
     args = parser.parse_args()
     
@@ -1096,6 +1173,8 @@ def main():
         results_dir=args.results,
         expected_output=expected_output,
         remove_packages=args.remove_pack,
+        replace_main_file=not args.no_replace_main,
+        normalize_filenames=args.normalize,
         check_students=args.check_stuid,
         verbose=args.verbose
     )
@@ -1109,4 +1188,3 @@ def main():
 
 if __name__ == "__main__":
     main()
- 
