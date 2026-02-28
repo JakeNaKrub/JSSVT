@@ -5,14 +5,21 @@ Automatically test student Java submissions by recursively processing zip files 
 ## Features
 
 - ✅ **Recursive Zip Processing** - Finds and tests all student submissions
-- ✅ **Smart File Handling** - Detects file locations (root, src/, nested folders)
+- ✅ **Recursive Zip Processing** - Finds and tests all student submissions
+- ✅ **Smart File Handling** - Detects file locations (root, src/, nested folders) and flattens extra folders automatically
+- ✅ **Zap the Wrapper** - Automatically explodes zip‑inside‑zip submissions into separate entries before testing
+- ✅ **Filename Normalization** - Renames a main class file to its declared `public class` name (A‑111‑2334.java → A111.java)
 - ✅ **Package Cleanup** - Optionally removes package declarations to avoid conflicts
-- ✅ **Output Validation** - Compares program output against expected results
-- ✅ **Selective Testing** - Test all students or specific ones with `--check-stuid`
+- ✅ **Dynamic Main Injection & Replacement** - Detects or injects `main` entry points; master `App.java` can overwrite student version unless disabled
+- ✅ **Output Validation** - Compares program output against expected results with fuzzy token matching
+- ✅ **Selective Testing** - Test all students or specific ones with `--check-stuid` or GUI filter
 - ✅ **Dual Reports** - Generates JSON (detailed) and CSV (summary) reports
 - ✅ **Error Tracking** - Captures compilation/execution errors with full details
 - ✅ **Cross-Platform** - Works on Windows, macOS, Linux
 - ✅ **Setup Automation** - One-command project initialization
+- ✅ **GUI Frontend** - Optional Tkinter GUI with import/cleaning utilities (launch with no args or `--gui`)
+- ✅ **Flexible CLI Controls** - Additional flags such as `--no-replace-main`, `--no-normalize` and verbose logging
+
 
 ## Project Structure
 
@@ -40,13 +47,15 @@ d:/JAVA AUTOMATION/
 
 ## How It Works
 
-1. **Extraction** - Extracts each student's zip file to a temporary directory
-2. **Cleanup** - Removes duplicate App.java and package declarations (optional)
-3. **File Detection** - Intelligently finds Java files in any directory structure
-4. **Compilation** - Compiles all Java files together using `javac`
-5. **Execution** - Runs the program and captures output
-6. **Validation** - Compares output against expected results (optional)
-7. **Reporting** - Generates JSON and CSV reports with detailed error info
+1. **Pre‑scan & Explosion** – optional wrapper zips (zips containing other zips but no `.java` files) are exploded into separate submissions before processing
+2. **Extraction** – Extracts each student's zip file to a uniquely‑named temporary directory, flattening unnested folders
+3. **Package Cleanup** – Strip `package` declarations if `--remove-pack` is used
+4. **Filename Normalization** – Rename a misnamed main class file to match its `public class` declaration (e.g. `A-111-1234.java → A111.java`)
+5. **File Detection & Injection** – Recursively find all `.java` files; locate or inject the `main` entry point and optionally replace it with the master `App.java`
+6. **Compilation** – Compile all Java files together using `javac` with an output directory
+7. **Execution** – Run the detected main class and capture stdout/stderr
+8. **Validation** – Fuzzy‑compare program output against expected results (if provided)
+9. **Reporting** – Generate JSON and CSV reports with detailed error information and summary remarks
 
 ## Quick Start
 
@@ -57,7 +66,7 @@ python setup.py
 Creates directories, templates, and documentation.
 
 ### 2. Add Student Submissions
-Place student zips in organized folders:
+Place student zips in organized folders (one folder per student ID). Nested zips are supported and will be exploded automatically.
 ```
 submissions/
 ├── 6838205621/
@@ -65,19 +74,22 @@ submissions/
 ├── 6838209221/
 │   └── homework.zip
 ```
-
 ### 3. Run Tests
+You can run either the GUI (no arguments or `--gui`) or the CLI. Examples below show the command‑line usage.
+
 ```powershell
-# Test all students
+# Test all students, clean up temporary files afterwards
 python java_submission_tester.py --cleanup
 
-# Test specific students
+# Test specific students using ID filter
 python java_submission_tester.py --check-stuid 6838205621 6838209221 --cleanup
 
-# With output validation and package removal
+# Validate against expected output and strip package declarations
 python java_submission_tester.py --expected expected_output.txt --remove-pack --cleanup
-```
 
+# Keep student main class (do not overwrite) and disable filename normalization
+python java_submission_tester.py --no-replace-main --no-normalize --cleanup
+```
 ### 4. Review Results
 Check `test_results/` for:
 - `results_*.json` - Detailed test results
@@ -98,13 +110,22 @@ python java_submission_tester.py [OPTIONS]
 | `--results DIR` | `--results "path/to/results"` | Results output directory (default: `test_results`) |
 | `--expected FILE` | `--expected expected_output.txt` | Expected output file for validation (optional) |
 | `--remove-pack` | `--remove-pack` | Remove package declarations from Java files (optional) |
+| `--no-replace-main` | `--no-replace-main` | Do **not** overwrite a student’s main class with the master file |
+| `--no-normalize` | `--no-normalize` | Disable automatic filename normalization based on class name |
 | `--check-stuid ID...` | `--check-stuid 6838205621 6838209221` | Test only specific student IDs (optional, space-separated) |
+| `--verbose` | `--verbose` | Print detailed logs for each submission |
 | `--cleanup` | `--cleanup` | Delete temporary extraction files after testing |
+| `--gui` | `--gui` | Launch the graphical user interface |
 | `--help` | `--help` | Show help message |
 
 ## Student Submission Format
 
-Each student must submit a `.zip` file in their own folder:
+Each student must submit a `.zip` file in their own folder. The script handles:
+
+- Zips containing a single folder (will be flattened automatically)
+- Nested `src/` or other directories – the tester finds `.java` files recursively
+- Wrapper zips containing additional zip files; these are exploded into separate sub‑submissions
+- Files renamed by some systems; main class will be normalized if possible
 
 ```
 submissions/
@@ -129,7 +150,6 @@ submissions/
             ├── TeddyDoll.java
             └── PorcelainDoll.java
 ```
-
 **Key Points:**
 - Folder name = **Student ID** (any format: `6838205621`, `student001`, etc.)
 - Any zip filename accepted: `submission.zip`, `homework.zip`, `lab02.zip`
