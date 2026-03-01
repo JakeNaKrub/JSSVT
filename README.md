@@ -39,6 +39,7 @@ d:/JAVA AUTOMATION/
 │   └── ...
 ├── temp_extracts/             # Temporary extraction directory (auto-cleanup)
 ├── java_submission_tester.py  # Main testing engine
+├── JVSSTV2_SingleFile.py       # Alternative grader for single-file assignments
 ├── setup.py                   # Project initializer
 ├── expected_output.txt        # Expected output template
 ├── README.md                  # This file
@@ -74,6 +75,11 @@ submissions/
 ├── 6838209221/
 │   └── homework.zip
 ```
+
+> **Single-file assignments:** use `JVSSTV2_SingleFile.py` instead of the
+> regular tester.  That script implements the specialised splitting and
+> deduplication behavior described earlier and is better suited when your
+> LMS supplies raw `.java` files rather than packages.
 ### 3. Run Tests
 You can run either the GUI (no arguments or `--gui`) or the CLI. Examples below show the command‑line usage.
 
@@ -195,6 +201,13 @@ Student ID,Status,Remark
 6838209221,FAILED,Compilation: error: cannot find symbol Doll[] dolls
 6838313821,FAILED,Output: Output mismatch: Expected 10 lines, got 8 lines
 ```
+
+*Note*: in a single‑file assignment multiple submissions from the same student
+may be processed (e.g. the LMS uploads `A.java` then later `A2.java`).  When
+writing the CSV report the grader performs a simple deduplication: if any
+targeted entry for a given student passes, only that passing row is included
+and all failures are dropped.  If none of the entries pass then all failure
+rows are retained so the instructor can review each error separately.
 
 ## Setting Up Default App.java
 
