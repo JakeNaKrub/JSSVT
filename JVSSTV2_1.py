@@ -60,32 +60,14 @@ class JavaSubmissionTester:
         
         self.test_results = []
         # Detect the main class name from default_code_dir
-        self.main_file_name = None
-        self.main_class_name = None
-        
+        self.main_file_name = "App.java" # Default fallback
         java_files = list(self.default_code_dir.glob("*.java"))
-        
         if java_files:
-            # Look for a file with public static void main
-            for f in java_files:
-                try:
-                    content = f.read_text(encoding='utf-8')
-                    if "public static void main" in content:
-                        self.main_file_name = f.name
-                        self.main_class_name = f.stem
-                        break
-                except Exception:
-                    continue
+            # Picks the first .java file found in the default_code folder
+            self.main_file_name = java_files[0].name
             
-            # Fall back to first file if no main method found
-            if not self.main_file_name:
-                self.main_file_name = java_files[0].name
-                self.main_class_name = java_files[0].stem
-        
-        if self.main_file_name:
-            self.log(f"✓ Detected main class from default_code: {self.main_class_name}")
-        else:
-            self.log(f"⚠ No Java files found in default_code")
+        self.main_class_name = self.main_file_name.replace(".java", "")
+        self.log(f"✓ Detected main class from default_code: {self.main_class_name}")
 
     def log(self, message: str):
         """Helper to print to console and optional logger callback."""
@@ -396,19 +378,8 @@ class JavaSubmissionTester:
         # Find where the student's Java files actually are (handles nested folders/src folders)
         # Step 3: DYNAMIC INJECTION
         # Find where the student's Java files actually live in the new folder
-        # Step 3: SMART DETECTION & INJECTION - Find student's code location
-        java_files = self.find_java_files(extract_path)
-        
-        # Determine target directory (where to copy default files)
-        if java_files:
-            target_dir = java_files[0].parent
-        else:
-            target_dir = extract_path
-        
-        # Step 3.1: Copy ALL default code files to target directory
-        self.copy_all_default_files(target_dir)
-        
-        # Step 3.2: Refresh java_files to include newly copied files
+        # Step 3: SMART DETECTION & INJECTION
+        # Step 3: SMART DETECTION & INJECTION
         java_files = self.find_java_files(extract_path)
         default_main_path = self.default_code_dir / self.main_file_name
         
@@ -420,6 +391,7 @@ class JavaSubmissionTester:
         
         if java_files:
             # A. First, try to find by Name Match
+            target_dir = java_files[0].parent
             for f in java_files:
                 if f.name == self.main_file_name:
                     student_main_path = f
@@ -648,25 +620,6 @@ class JavaSubmissionTester:
                 temp_container.rmdir()
             except:
                 pass # If it's not empty for some reason, ignore
-    
-    def copy_all_default_files(self, target_dir: Path) -> None:
-        """
-        Copy ALL Java files from default_code directory to target directory.
-        This ensures all necessary support files are available for compilation.
-        """
-        try:
-            default_files = list(self.default_code_dir.glob("*.java"))
-            if not default_files:
-                self.log(f"  ⚠ No Java files found in default_code directory")
-                return
-            
-            for default_file in default_files:
-                dest = target_dir / default_file.name
-                shutil.copy(default_file, dest)
-                self.log(f"  → Copied {default_file.name} from default_code")
-        except Exception as e:
-            self.log(f"  ⚠ Error copying default files: {e}")
-    
     def print_summary(self) -> None:
         """Print summary of test results."""
         passed = sum(1 for r in self.test_results if r["overall_status"] == "PASSED")
