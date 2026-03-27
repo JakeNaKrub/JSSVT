@@ -32,6 +32,8 @@ class JavaSubmissionTester:
                  remove_packages: bool = False,
                  replace_main_file: bool = True,
                  normalize_filenames: bool = True,
+                 copy_default_files: bool = True,
+                 copy_only_main: bool = False,
                  check_students: Optional[List[str]] = None,
                  verbose: bool = False,
                  logger: Optional[Callable[[str], None]] = None,
@@ -47,6 +49,8 @@ class JavaSubmissionTester:
         self.remove_packages = remove_packages
         self.replace_main_file = replace_main_file
         self.normalize_filenames = normalize_filenames
+        self.copy_default_files = copy_default_files
+        self.copy_only_main = copy_only_main
         self.check_students = check_students
         self.verbose = verbose
         self.logger = logger
@@ -405,8 +409,11 @@ class JavaSubmissionTester:
         else:
             target_dir = extract_path
         
-        # Step 3.1: Copy ALL default code files to target directory
-        self.copy_all_default_files(target_dir)
+        # Step 3.1: Copy default code files (unless disabled)
+        if self.copy_default_files:
+            self.copy_all_default_files(target_dir)
+        else:
+            self.log(f"  ℹ Skipping default file copy (disabled in settings)")
         
         # Step 3.2: Refresh java_files to include newly copied files
         java_files = self.find_java_files(extract_path)
@@ -651,19 +658,47 @@ class JavaSubmissionTester:
     
     def copy_all_default_files(self, target_dir: Path) -> None:
         """
-        Copy ALL Java files from default_code directory to target directory.
-        This ensures all necessary support files are available for compilation.
+        Copy default Java files to target directory based on copy mode.
+        
+        Modes:
+        - copy_default_files=True, copy_only_main=False: Copy ALL files (default)
+        - copy_default_files=True, copy_only_main=True: Copy ONLY the main class file
+        - copy_default_files=False: Don't copy anything
         """
+        if not self.copy_default_files:
+            self.log(f"  ℹ Copy mode: DISABLED (no default files will be copied)")
+            return
+        
         try:
             default_files = list(self.default_code_dir.glob("*.java"))
             if not default_files:
                 self.log(f"  ⚠ No Java files found in default_code directory")
                 return
             
-            for default_file in default_files:
-                dest = target_dir / default_file.name
-                shutil.copy(default_file, dest)
-                self.log(f"  → Copied {default_file.name} from default_code")
+            # Determine which files to copy
+            if self.copy_only_main:
+                self.log(f"  ℹ Copy mode: MAIN ONLY (support files will be skipped)")
+                # Only copy the main class file
+                main_file = self.default_code_dir / self.main_file_name
+                if main_file.exists():
+                    dest = target_dir / main_file.name
+                    shutil.copy(main_file, dest)
+                    self.log(f"  → Copied {main_file.name} from default_code")
+                else:
+                    self.log(f"  ⚠ Main file {self.main_file_name} not found in default_code")
+                
+                # Log which files were skipped
+                skipped = [f.name for f in default_files if f.name != self.main_file_name]
+                if skipped:
+                    self.log(f"  ⊘ Skipped support files: {', '.join(skipped)}")
+            else:
+                self.log(f"  ℹ Copy mode: ALL FILES")
+                # Copy all files (original behavior)
+                for default_file in default_files:
+                    dest = target_dir / default_file.name
+                    shutil.copy(default_file, dest)
+                    self.log(f"  → Copied {default_file.name} from default_code")
+                    
         except Exception as e:
             self.log(f"  ⚠ Error copying default files: {e}")
     
@@ -716,6 +751,8 @@ class GradingGUI:
         self.remove_packages = tk.BooleanVar(value=False)
         self.replace_main_file = tk.BooleanVar(value=True)
         self.normalize_filenames = tk.BooleanVar(value=True)
+        self.copy_default_files = tk.BooleanVar(value=True)
+        self.copy_only_main = tk.BooleanVar(value=False)
         self.verbose = tk.BooleanVar(value=True)
         self.cleanup = tk.BooleanVar(value=True)
         self.student_filter = tk.StringVar(value="")
@@ -1008,9 +1045,13 @@ class GradingGUI:
         ttk.Checkbutton(opt_frame, text="Replace Student Main Class", variable=self.replace_main_file).grid(row=1, column=0, sticky="w", padx=5, pady=(5,0))
         ttk.Checkbutton(opt_frame, text="Normalize Filenames", variable=self.normalize_filenames).grid(row=1, column=1, sticky="w", padx=5, pady=(5,0))
         
-        # Row 2 (Filter)
-        ttk.Label(opt_frame, text="Filter Students (space separated):").grid(row=2, column=0, sticky="w", padx=5, pady=(10,0))
-        ttk.Entry(opt_frame, textvariable=self.student_filter, width=40).grid(row=2, column=1, columnspan=2, sticky="we", padx=5, pady=(10,0))
+        # Row 2 (Copy control)
+        ttk.Checkbutton(opt_frame, text="Copy Default Files", variable=self.copy_default_files).grid(row=2, column=0, sticky="w", padx=5, pady=(5,0))
+        ttk.Checkbutton(opt_frame, text="Copy Only Main (skip support files)", variable=self.copy_only_main).grid(row=2, column=1, sticky="w", padx=5, pady=(5,0))
+        
+        # Row 3 (Filter)
+        ttk.Label(opt_frame, text="Filter Students (space separated):").grid(row=3, column=0, sticky="w", padx=5, pady=(10,0))
+        ttk.Entry(opt_frame, textvariable=self.student_filter, width=40).grid(row=3, column=1, columnspan=2, sticky="we", padx=5, pady=(10,0))
         # --- Action Frame ---
         act_frame = ttk.Frame(self.root, padding="10")
         act_frame.pack(fill="x", padx=10)
@@ -1108,6 +1149,8 @@ class GradingGUI:
                 remove_packages=self.remove_packages.get(),
                 replace_main_file=self.replace_main_file.get(),
                 normalize_filenames=self.normalize_filenames.get(),
+                copy_default_files=self.copy_default_files.get(),
+                copy_only_main=self.copy_only_main.get(),
                 check_students=check_ids,
                 verbose=self.verbose.get(),
                 logger=self.append_log,  # Pass the GUI logging function
@@ -1195,11 +1238,23 @@ def main():
         action="store_true",
         help="Clean up temporary extraction directory after testing"
     )
+    parser.add_argument(
+        "--no-copy-default",
+        action="store_false",
+        dest="copy_default_files",
+        help="Skip copying default code files (use student code only)"
+    )
+    parser.add_argument(
+        "--copy-main-only",
+        action="store_true",
+        dest="copy_only_main",
+        help="Copy only the main class file, skip support files"
+    )
     parser.add_argument("--no-normalize",
                         action="store_false", 
                         dest="normalize", 
                         help="Disable filename normalization")
-    parser.set_defaults(normalize=True)
+    parser.set_defaults(normalize=True, copy_default_files=True, copy_only_main=False)
     
     args = parser.parse_args()
     
@@ -1222,6 +1277,8 @@ def main():
         remove_packages=args.remove_pack,
         replace_main_file=not args.no_replace_main,
         normalize_filenames=args.normalize,
+        copy_default_files=args.copy_default_files,
+        copy_only_main=args.copy_only_main,
         check_students=args.check_stuid,
         verbose=args.verbose
     )
